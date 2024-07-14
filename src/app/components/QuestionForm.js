@@ -1,11 +1,52 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function QuestionForm() {
-  const [title, setTitle] = useState('')
-  const [summary, setSummary] = useState('')
-  const [isFormVisible, setIsFormVisible] = useState(false)
+  const [title, setTitle] = useState('');
+  const [summary, setSummary] = useState('');
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const suggestionsRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+        setSuggestions([]);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  async function handleTitleChange(e) {
+    const value = e.target.value;
+    setTitle(value);
+
+    if (value.length > 0) {
+      try {
+        const res = await fetch(`/api/leetcode-search?keyword=${encodeURIComponent(value)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data);
+        } else {
+          console.error('Failed to fetch suggestions');
+        }
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+      }
+    } else {
+      setSuggestions([]);
+    }
+  }
+
+  function handleSuggestionClick(suggestion) {
+    setTitle(suggestion.title);
+    setSuggestions([]);
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -17,9 +58,8 @@ export default function QuestionForm() {
     if (res.ok) {
       setTitle('');
       setSummary('');
-      // You might want to add some state update logic here to refresh the list
-      setIsFormVisible(false)
-      window.dispatchEvent(new CustomEvent('refreshQuestions'))
+      setIsFormVisible(false);
+      window.dispatchEvent(new CustomEvent('refreshQuestions'));
     }
   }
 
@@ -35,13 +75,24 @@ export default function QuestionForm() {
       )}
       {isFormVisible && (
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Question title"
-            required
-          />
+          <div className="input-container">
+            <input
+              type="text"
+              value={title}
+              onChange={handleTitleChange}
+              placeholder="Question title"
+              required
+            />
+            {suggestions.length > 0 && (
+              <ul className="suggestions" ref={suggestionsRef}>
+                {suggestions.map((suggestion, index) => (
+                  <li key={index} onClick={() => handleSuggestionClick(suggestion)}>
+                    {suggestion.title} - {suggestion.difficulty}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <input
             type="text"
             value={summary}
