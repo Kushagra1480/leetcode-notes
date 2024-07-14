@@ -1,14 +1,27 @@
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+.question-form-container {
+  margin-bottom: 20px;
+}
+
+.add-question-button {
+  font-size: 24px;
+  padding: 5px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-question-button:hover {
+  background-color: #0056b3;
 }
 
 form {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-top: 10px;
 }
 
 input, button {
@@ -16,13 +29,11 @@ input, button {
   font-size: 16px;
 }
 
-ul {
-  list-style-type: none;
-  padding: 0;
+.form-buttons {
+  display: flex;
+  gap: 10px;
 }
 
-li {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 10px;
+.form-buttons button {
+  flex: 1;
 }
